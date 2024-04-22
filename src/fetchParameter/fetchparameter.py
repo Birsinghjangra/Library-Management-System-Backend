@@ -1,7 +1,8 @@
 
 
 class Fetchparameters:
-    def fetch_parameter(self,request,param,default=None, type = str):
+    @staticmethod
+    def fetch_parameter(request,param,default=None, type = str):
         val = default
         try:
             if request.method == 'POST':

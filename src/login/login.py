@@ -6,8 +6,8 @@ class Login:
     @staticmethod
     def login_api(email,password):
         from src.DB_connect.dbconnection import Dbconnect
-        db_connection = Dbconnect()
-        connection =db_connection.dbconnects()
+        connection =Dbconnect.dbconnects()
+        cursor = connection.cursor()
         if connection:
             try:
                 cursor = connection.cursor()

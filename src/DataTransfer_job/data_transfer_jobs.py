@@ -14,8 +14,7 @@ class DataTransfer:
     @staticmethod
     def create_data_operation(id,table_name,sql_insert):
         message = ''
-        db_connection = Dbconnect()
-        connection = db_connection.dbconnects()
+        connection = Dbconnect.dbconnects()
         if connection:
             cursor = connection.cursor()
             try:
@@ -37,8 +36,8 @@ class DataTransfer:
         try:
             # print("line 38",table_name)
             # print("line 39", column_data)
-            db_connection = Dbconnect()
-            connection = db_connection.dbconnects()
+
+            connection = Dbconnect.dbconnects()
             validation_flag = 0
             if table_name == 'category' or table_name == 'productname':
                 new_name = column_data['name']
@@ -65,8 +64,7 @@ class DataTransfer:
 
     @staticmethod
     def delete_data_operation(table_name, row_id):
-        db_connection = Dbconnect()
-        connection = db_connection.dbconnects()
+        connection = Dbconnect.dbconnects()
         if connection:
             try:
                 cursor = connection.cursor()
@@ -88,8 +86,7 @@ class DataTransfer:
 
     @staticmethod
     def sell_product(id, sell_quantity, unit_sellingPrice):
-        db_connection = Dbconnect()
-        connection = db_connection.dbconnects()
+        connection = Dbconnect.dbconnects()
         cursor = connection.cursor()
         try:
             get_query = f"select * from products where id = {id}"
@@ -162,8 +159,7 @@ class DataTransfer:
 
     @staticmethod
     def check_duplicate(table, new_name):
-        db_connection = Dbconnect()
-        connection = db_connection.dbconnects()
+        connection = Dbconnect.dbconnects()
         cursor = connection.cursor()
 
         if connection:

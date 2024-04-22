@@ -1,7 +1,8 @@
 import mysql.connector
 
 class Dbconnect:
-    def dbconnects(self):
+    @staticmethod
+    def dbconnects():
         connection = mysql.connector.connect(
             host='localhost',
             port='3306',
