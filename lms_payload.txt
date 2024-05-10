@@ -1,0 +1,84 @@
+http://127.0.0.1:5000/login
+post-
+login
+{
+    "email":"test@gmail.com,
+    "password":"12345678"
+}
+
+
+http://127.0.0.1:5000/mysql -get
+post-
+insert borrower
+http://127.0.0.1:5000/db_operation
+{
+  "table_name":"borrower",
+  "action":"insert",
+  "column_data":{
+   "Bname":"Nilesh patel",
+   "Address":"Rahul Garden",
+   "Phone":"8929003946"
+  }
+}
+
+delete
+http://127.0.0.1:5000/db_operation
+{
+      "table_name": "borrower",
+      "row_ids":"ID000001",
+      "action": "delete"
+    }
+	
+-----------------------------
+________________
+insert book-
+{
+  "table_name": "book",
+  "action": "insert",
+  "column_data": {
+    "Isbn": "1234569890",
+    "Title": "Sample Book Title another ",
+    "isCheckedOut": 0,
+    "publication": "Publisher XYZ",
+    "price": 25.99,
+    "Eddition": 2024
+  }
+}
+
+____________
+
+http://127.0.0.1:5000/issue_book
+{
+    "id":"ID000001",
+    "Isbn":"1234567890"
+}
+
+---------------------
+allUserBook
+http://127.0.0.1:5000/allUserBook
+{
+    "id":"ID000001",
+    "Isbn": "1234567890"
+}
+--------------------------
+
+http://127.0.0.1:5000/calculate_fine
+{
+    "id":"ID000001",
+    "Isbn": "1234567890"
+}
+
+-----------------------------
+
+
+
+getdata- post api
+http://127.0.0.1:5000/getData_common
+{
+    "Table_name":"book"
+    
+}
+
+--------------------
+
+new updates api---

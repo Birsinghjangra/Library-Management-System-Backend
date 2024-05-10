@@ -1,5 +1,6 @@
+create database lms;
+use lms;
 
-//signup
 CREATE TABLE signup (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL,
@@ -7,8 +8,28 @@ CREATE TABLE signup (
     password VARCHAR(100) NOT NULL
 );
 insert into signup(username,email,password)
-value ('nilesh_kumar','nilesh@gmail.com','nilesh830');
+value ('bir','bir@gmail.com','12345678');
 
+insert into signup(username,email,password)
+value ('test','test@gmail.com','12345678');
+
+CREATE TABLE BORROWER (
+    id VARCHAR(10) PRIMARY KEY,
+    Ssn VARCHAR(9) NULL,
+    Bname VARCHAR(100) NOT NULL,
+    Address VARCHAR(1000) NOT NULL,
+    Phone VARCHAR(10) UNIQUE,
+    date_added DATE
+);
+
+CREATE TABLE BOOK (
+    Isbn VARCHAR(20) PRIMARY KEY,
+    Title VARCHAR(255),
+    isCheckedOut INT,
+    publication VARCHAR(255),
+    price DECIMAL(10, 2),
+    Eddition INT
+);
 
 CREATE TABLE BOOK(Isbn VARCHAR(10) primary key, Title VARCHAR(1000) not null, isCheckedOut boolean);
 CREATE TABLE AUTHORS(Author_id INT UNSIGNED primary key, Name VARCHAR(100));

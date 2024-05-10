@@ -14,11 +14,12 @@ CORS(app)
 
 @app.route('/mysql', methods=METHODS)
 def connectionss():
-    db_connection = Dbconnect()
-    connection = db_connection.dbconnects()
+    connection = Dbconnect.dbconnects()
     if connection:
+        print('Connected to MySQL database')
         return 'Connected to MySQL database'
     else:
+        print('Failed to connect to MySQL database')
         return 'Failed to connect to MySQL database'
 
 @app.route('/db_operation', methods=METHODS)
@@ -34,9 +35,36 @@ def csv_import():
     return Routes.csv_import(request)
 
 @app.route("/addBorrower",methods=METHODS)
-def addBorrower():
+def addBorrower1():
     return Routes.addBorrower(request)
 
+@app.route("/getData_common",methods=METHODS)
+def getdata():
+    return Routes.getData_common(request)
+
+@app.route("/searchUser",methods=METHODS)
+def getuser():
+    return Routes.searchUser(request)
+
+@app.route("/searchBook",methods=METHODS)
+def getbook():
+    return Routes.searchBook(request)
+
+@app.route("/issue_book",methods =METHODS)
+def issue_book():
+    return Routes.issue_book(request)
+
+@app.route("/calculate_fine",methods =METHODS)
+def calculate_fine():
+    return Routes.calculate_fine(request)
+
+@app.route("/submit_fine",methods =METHODS)
+def submit_fine():
+    return Routes.submit_fine(request)
+
+@app.route("/allUserBook",methods =METHODS)
+def allUserBook():
+    return Routes.allUserBook(request)
 # @app.route("/addBorrower",methods=METHODS)
 # def addBorrower():
 #     data = request.get_json(force=True)

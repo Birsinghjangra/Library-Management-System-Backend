@@ -4,3 +4,6 @@ CREATE TABLE addproduct (
     qty INT NOT NULL,
     amount DECIMAL(10, 2) NOT NULL
 );
+
+ALTER TABLE `borrower`
+ADD COLUMN `date_added` TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
