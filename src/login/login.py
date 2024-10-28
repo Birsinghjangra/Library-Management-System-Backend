@@ -7,6 +7,7 @@ class Login:
     def login_api(email,password):
         from src.DB_connect.dbconnection import Dbconnect
         connection =Dbconnect.dbconnects()
+        print("line 10",connection)
         cursor = connection.cursor()
         if connection:
             try:

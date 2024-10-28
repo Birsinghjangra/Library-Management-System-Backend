@@ -61,7 +61,11 @@ class DataTransfer:
             }
 
         except Exception as e:
-            raise e
+            return {
+                "message":str(e),
+                "status":"error",
+                "data":''
+            }
 
     @staticmethod
     def delete_data_operation(table_name, row_id):

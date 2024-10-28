@@ -1,4 +1,6 @@
-
+import os
+import glob
+from flask import jsonify, send_file
 
 from src.DataTransfer_job.data_transfer_jobs import DataTransfer
 from src.Get_data.get_data import GetData
@@ -125,5 +127,45 @@ class Routes:
         result = GetData.allUserBook(id,Isbn)
         return result
 
-    # @staticmethod
-    # def calculate_fine(request):
+    @staticmethod
+    def generateBarCode(request):
+        from src.data_migration.barcode import BarcodeGenerator
+        # bookName = Fetchparameters.fetch_parameter(request, 'bookName', type=str)
+        # edition = Fetchparameters.fetch_parameter(request, 'edition', type=str)
+        # author = Fetchparameters.fetch_parameter(request, 'author', type=str)
+        isbn = Fetchparameters.fetch_parameter(request, 'isbn', type=str)
+        if not isbn:
+            return jsonify({"error": "ISBN is required"}), 400
+        # barcode_path, error_response, status_code = BarcodeGenerator.generate_barcode(isbn)
+        # if error_response:
+        #     return error_response, status_code
+        # return send_file(
+        #     barcode_path,
+        #     as_attachment=True,
+        #     download_name=f"barcode_{isbn}.png",  # Customize the filename
+        #     mimetype='image/png'  # Set the MIME type
+        # )
+
+        result = BarcodeGenerator.generate_barcode(isbn)
+        return result
+
+    @staticmethod
+    def download_barcode(request):
+        from app import SAVE_DIR
+        isbn = Fetchparameters.fetch_parameter(request, 'isbn', type=str)
+        if not isbn:
+            return jsonify({"error": "ISBN parameter is required."}), 400
+
+        try:
+            barcode_path = os.path.join(SAVE_DIR, f"{isbn}.png")
+            absolute_path = os.path.abspath(barcode_path)
+
+            print(f"Looking for barcode at: {absolute_path}")  # Debug print
+            if not os.path.exists(absolute_path):
+                return jsonify({"message": "Barcode not found.", "status": "error"}), 404
+
+            return send_file(absolute_path, as_attachment=True, download_name=f"{isbn}.png", mimetype='image/png')
+
+        except Exception as e:
+            print(f"Error: {str(e)}")  # Debug print
+            return jsonify({"error": str(e)}), 500

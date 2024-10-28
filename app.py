@@ -1,7 +1,7 @@
 import requests
-from flask import Flask, request, jsonify  # Import request object
+from flask import Flask, request,send_file, jsonify  # Import request object
 from flask_cors import CORS
-
+import os
 # from src.routes.routes import Routes
 
 from src.DB_connect.dbconnection import Dbconnect
@@ -10,16 +10,19 @@ from src.routes.routes import Routes
 METHODS = ['GET', 'POST']
 
 app = Flask(__name__)
+SAVE_DIR = 'barcodes'
+if not os.path.exists(SAVE_DIR):
+    os.makedirs(SAVE_DIR)
 CORS(app)
 
 @app.route('/mysql', methods=METHODS)
 def connectionss():
     connection = Dbconnect.dbconnects()
     if connection:
-        print('Connected to MySQL database')
+        # print('Connected to MySQL database')
         return 'Connected to MySQL database'
     else:
-        print('Failed to connect to MySQL database')
+        # print('Failed to connect to MySQL database')
         return 'Failed to connect to MySQL database'
 
 @app.route('/db_operation', methods=METHODS)
@@ -65,31 +68,15 @@ def submit_fine():
 @app.route("/allUserBook",methods =METHODS)
 def allUserBook():
     return Routes.allUserBook(request)
-# @app.route("/addBorrower",methods=METHODS)
-# def addBorrower():
-#     data = request.get_json(force=True)
-#     query = "select count(card_id) + 1 from borrower;"
-#     prefix = 'ID'
-#     cursor.execute(query)
-#     row = cursor.fetchone()
-#     temp = str(row[0])
-#     card_id_temp = ''
-#     for i in range(len(temp),6):
-#         card_id_temp = card_id_temp + '0'
-#     card_id = prefix+card_id_temp+temp
-#     query = "INSERT into BORROWER(card_id,ssn,bname,address,phone) values(%s,%s,%s,%s,%s)"
-#     response = None
-#     try:
-#         cursor.execute(query,(card_id,data["ssn"],data["name"],data["address"],data["phone"]))
-#         response = {'message':'Borrower Added','success':True}
-#         connection.commit()
-#     except mysql.connector.Error as err:
-#         if(err.errno in errorCodes.errorCodeMessage):
-#             response = {'message':errorCodes.errorCodeMessage[err.errno],'success':False}
-#         else:
-#             response = {'message':'Borrower Creation failed','success':False}
-#     return jsonify(response)
-#
+
+@app.route("/generateBarCode",methods =METHODS)
+def generateBarCode():
+    return Routes.generateBarCode(request)
+
+@app.route('/download_Barcode', methods=METHODS)
+def download_barcode():
+    return Routes.download_barcode(request)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
