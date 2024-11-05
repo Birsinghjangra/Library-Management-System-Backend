@@ -14,7 +14,7 @@ class BarcodeGenerator:
 
         try:
             # Create a unique code for the barcode
-            unique_code = f"ABC SCHOOL-({len(isbn)})-{isbn}"
+            unique_code = f"GMSSSS SAFIDON-({len(isbn)})-{isbn}"
             barcode_stream = BytesIO()
             barcode_instance = Code128(unique_code, writer=ImageWriter())
             barcode_instance.write(barcode_stream)

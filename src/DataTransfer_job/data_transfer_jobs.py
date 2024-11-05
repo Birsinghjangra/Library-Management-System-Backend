@@ -1,5 +1,4 @@
 from pickle import STRING
-
 import mysql
 import pandas as pd
 from flask import jsonify
@@ -7,14 +6,12 @@ from flask import jsonify
 from src.DB_connect.dbconnection import Dbconnect
 import json
 
-from src.data_migration.borrower import Borrower
+from src.data_migration.student import Student
 from src.dataframe_df.dataframe_operations import Dataframe_pandas
-
 
 class DataTransfer:
     @staticmethod
-    def create_data_operation(id,table_name,sql_insert):
-        message = ''
+    def create_data_operation(srn,table_name,sql_insert):
         connection = Dbconnect.dbconnects()
         if connection:
             cursor = connection.cursor()
@@ -31,40 +28,61 @@ class DataTransfer:
         else:
             return 'Failed to connect to the database'
 
-
     @staticmethod
     def save_data_operation(table_name, column_data, action):
         try:
-            # print("line 38",table_name)
-            # print("line 39", column_data)
-
             connection = Dbconnect.dbconnects()
             validation_flag = 0
-            if table_name == 'borrower':
-                result = Borrower.addborower(column_data)
+
+            if table_name == 'student':
+                result = Student.addStudent(column_data)
                 return result
 
-
             if connection:
-                column_data_json =column_data
-                data_set = pd.json_normalize(column_data_json)
+                # Extract quantity from column_data if available
+                quantity = column_data.get('quantity', 1)  # Default to 1 if not specified
+                # Remove quantity from column_data to avoid insertion into the database
+                column_data.pop('quantity', None)
+
+                # Prepare a list to hold data for multiple rows
+                data_to_insert = []
+
+                # Validate quantity
+                if quantity is None or quantity < 1:
+                    return {
+                        "message": "Quantity must be at least 1.",
+                        "status": "error"
+                    }
+
+                for i in range(quantity):
+                    # Create a copy of the data to insert
+                    row_data = column_data.copy()  # Make a copy to avoid overwriting
+
+                    # Set quantity to 1 for each row
+                    row_data['quantity'] = 1  # Set quantity to 1 for each row
+                    data_to_insert.append(row_data)
+
+                # Normalize the data and create a DataFrame
+                data_set = pd.json_normalize(data_to_insert)
                 Dataframe_pandas.write_df_to_sql(data_set, table_name, operation='REPLACE')
-            if validation_flag == 1:
-                message = 'Fields has an Empty Value',
-                status = "error"
-            else:
-                message = 'Book added successfully'
-                status = 'success'
-            return {
-                "message":message,
-                "status":status
-            }
+
+                if validation_flag == 1:
+                    message = 'Fields have an Empty Value'
+                    status = "error"
+                else:
+                    message = 'Books added successfully'
+                    status = 'success'
+
+                return {
+                    "message": message,
+                    "status": status
+                }
 
         except Exception as e:
             return {
-                "message":str(e),
-                "status":"error",
-                "data":''
+                "message": str(e),
+                "status": "error",
+                "data": ''
             }
 
     @staticmethod
@@ -76,7 +94,7 @@ class DataTransfer:
                 # if not isinstance(row_id, int):
                 #     return {'status': 'Error', 'message': 'Row ID must be an integer'}
 
-                delete_sql = f"DELETE FROM {table_name} WHERE id = '{row_id}'"
+                delete_sql = f"DELETE FROM {table_name} WHERE srn = '{row_id}'"
                 cursor.execute(delete_sql)  # Corrected method name
                 connection.commit()
                 if cursor.rowcount == 0:
@@ -98,7 +116,7 @@ class DataTransfer:
             if connection:
                 data_df = pd.DataFrame([column_data])
                 set_clause = ', '.join([f"{key} = '{value}'" for key, value in column_data.items()])
-                update_query = f"UPDATE {table_name} SET {set_clause} WHERE id = '{row_id}'"
+                update_query = f"UPDATE {table_name} SET {set_clause} WHERE srn = '{row_id}'"
                 cursor = connection.cursor()
                 cursor.execute(update_query)
                 connection.commit()
@@ -110,4 +128,3 @@ class DataTransfer:
                 return {'status': 'error', 'message': 'Failed to connect to the database'}
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
-

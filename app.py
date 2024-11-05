@@ -37,9 +37,9 @@ def login_api():
 def csv_import():
     return Routes.csv_import(request)
 
-@app.route("/addBorrower",methods=METHODS)
-def addBorrower1():
-    return Routes.addBorrower(request)
+@app.route("/addStudent",methods=METHODS)
+def addStudent():
+    return Routes.addStudent(request)
 
 @app.route("/getData_common",methods=METHODS)
 def getdata():
@@ -76,7 +76,6 @@ def generateBarCode():
 @app.route('/download_Barcode', methods=METHODS)
 def download_barcode():
     return Routes.download_barcode(request)
-
 
 if __name__ == '__main__':
     app.run(debug=True)

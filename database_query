@@ -1,9 +1,72 @@
-CREATE TABLE addproduct (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    qty INT NOT NULL,
-    amount DECIMAL(10, 2) NOT NULL
-);
+//student table
+CREATE TABLE `student` (
+  `admission_no` VARCHAR(20) NOT NULL,
+  `student_name` VARCHAR(100) NOT NULL,
+  `class` VARCHAR(5) NOT NULL,
+  `section` VARCHAR(5) NOT NULL,
+  `roll_no` VARCHAR(10) NOT NULL,
+  `phone` VARCHAR(10) NOT NULL,
+  `address` VARCHAR(1000) NOT NULL,
+  `createdOn` DATE DEFAULT NULL,
+  PRIMARY KEY (`admission_no`),
+  UNIQUE KEY `Phone` (`phone`),
+  UNIQUE KEY `RollNo` (`roll_no`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-ALTER TABLE `borrower`
-ADD COLUMN `date_added` TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+CREATE TABLE `student` (
+  `srn` VARCHAR(20) NOT NULL,
+  `student_name` VARCHAR(100) NOT NULL,
+  `class` VARCHAR(5) NOT NULL,
+  `section` VARCHAR(5) NOT NULL,
+  `roll_no` VARCHAR(10) NOT NULL,
+  `phone` VARCHAR(10) NOT NULL,
+  `address` VARCHAR(1000) NOT NULL,
+  `createdOn` DATE DEFAULT NULL,
+  PRIMARY KEY (`srn`),
+  UNIQUE KEY `Phone` (`phone`),
+  UNIQUE KEY `RollNo` (`roll_no`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+CREATE TABLE `book` (
+  `book_id` INT NOT NULL AUTO_INCREMENT,
+  `isbn` VARCHAR(13) NOT NULL,
+  `title` VARCHAR(255) NOT NULL,
+  `publication` VARCHAR(255) NOT NULL,
+  `author_name` VARCHAR(255) NOT NULL,
+  `price` INT NOT NULL,
+  `edition` INT NOT NULL,
+  `quantity` INT NOT NULL DEFAULT 1,
+  `isCheckedOut` INT DEFAULT NULL,
+  PRIMARY KEY (`book_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+ALTER TABLE `book` AUTO_INCREMENT = 1001;
+
+
+CREATE TABLE `borrower_book_detail` (
+  `srn` INT(10) NOT NULL,
+  `student_name` VARCHAR(255) NOT NULL,
+  `class` INT(10) NOT NULL,
+  `section` VARCHAR(10) NOT NULL,
+  `book_id` INT(10) NOT NULL,
+  `isbn` VARCHAR(13) NOT NULL,
+  `title` VARCHAR(255) NOT NULL,
+  `author_name` VARCHAR(255) NOT NULL,
+  `issued_at` DATE NOT NULL,
+  `end_date` DATE NOT NULL,
+  `fine` INT DEFAULT 0,
+  `remark` VARCHAR(1000) DEFAULT NULL,
+  PRIMARY KEY (`srn`, `book_id`, `isbn`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+SELECT * FROM lms.book;
+
+ALTER TABLE book
+ADD COLUMN srn INT DEFAULT NULL AFTER isbn;
+ALTER TABLE book
+DROP COLUMN student_id;
+
+SELECT b.book_id, b.isbn, b.title, b.author_name, b.publication, s.srn, s.student_name, s.class, s.roll_no
+FROM book AS b
+LEFT JOIN student AS s ON s.srn = b.srn where isbn=2222222222222 ;
