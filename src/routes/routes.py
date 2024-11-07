@@ -69,8 +69,9 @@ class Routes:
     @staticmethod
     def searchBook(request):
         title = Fetchparameters.fetch_parameter(request,'title', type = str)
+        isbn = Fetchparameters.fetch_parameter(request, 'isbn',default=" ''", type=str)
         Table_name = Fetchparameters.fetch_parameter(request, 'Table_name', type=str)
-        result = GetData.searchBook(title,Table_name)
+        result = GetData.searchBook(title, isbn,Table_name)
         return result
 
     @staticmethod
