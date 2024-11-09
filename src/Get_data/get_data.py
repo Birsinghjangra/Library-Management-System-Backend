@@ -142,7 +142,7 @@ class GetData:
                             })
 
     @staticmethod
-    def calculate_fine(id, isbn):
+    def calculate_fine(id, isb):
         get_fine = f"SELECT * from  borrower_book_detail WHERE id_card ='{id}' AND isbn= '{isbn}'"
         df = Dataframe_pandas.read_sql_as_df(get_fine)
         connection = Dbconnect.dbconnects()
