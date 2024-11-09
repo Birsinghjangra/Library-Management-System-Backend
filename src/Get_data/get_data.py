@@ -83,39 +83,43 @@ class GetData:
 
     @staticmethod
     def issue_book(srn, isbn):
-        connection = Dbconnect.dbconnects()
-        cursor = connection.cursor()
+        try:
+            connection = Dbconnect.dbconnects()
+            cursor = connection.cursor()
 
-        # Check if the book is available for issuing
-        query = f"SELECT b.book_id, b.isbn, b.title, b.author_name, b.publication, s.srn, s.student_name, s.class, s.roll_no FROM book AS b LEFT JOIN student AS s ON s.srn = b.srn where b.isbn={isbn} AND b.isCheckedOut = 0"
-        book_details= Dataframe_pandas.read_sql_as_df(query)
+            # Check if the book is available for issuing
+            query = f"SELECT b.book_id, b.isbn, b.title, b.author_name, b.publication, s.srn, s.student_name, s.class, s.roll_no FROM book AS b LEFT JOIN student AS s ON s.srn = b.srn where b.isbn={isbn} AND b.isCheckedOut = 0"
+            book_details= Dataframe_pandas.read_sql_as_df(query)
 
-        if book_details.empty:
-            return jsonify({'message': 'The book is not available for issuing', 'status': 'error'})
-        else:
-            book_id = book_details.iloc[0]['book_id']
-            isbn = book_details.iloc[0]['isbn']
-            title = book_details.iloc[0]['title']
-            author_name = book_details.iloc[0]['author_name']
+            if book_details.empty:
+                return jsonify({'message': 'The book is not available for issuing', 'status': 'error'})
+            else:
+                book_id = book_details.iloc[0]['book_id']
+                isbn = book_details.iloc[0]['isbn']
+                title = book_details.iloc[0]['title']
+                author_name = book_details.iloc[0]['author_name']
 
-            student_name = request.json.get('student_name')
-            issue_date = datetime.now().strftime("%Y-%m-%d")
-            return_date = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
-            remark = request.json.get('remark', '')
+                student_name = request.json.get('student_name')
+                issue_date = datetime.now().strftime("%Y-%m-%d")
+                return_date = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
+                remark = request.json.get('remark', '')
 
-        # Update book status to checked out
-        update_book_query = f"UPDATE book SET isCheckedOut = 1 WHERE book_id = '{book_id}'"
-        cursor.execute(update_book_query)
+            # Update book status to checked out
+            update_book_query = f"UPDATE book SET isCheckedOut = 1 WHERE book_id = '{book_id}'"
+            cursor.execute(update_book_query)
 
-        insert_issue_query = f"""
-            INSERT INTO borrower_book_detail (srn, student_name, class, section, book_id, isbn, title, author_name, issued_at, end_date, remark)
-            VALUES ('{srn}', '{student_name}', '{request.json.get('class')}', '{request.json.get('section')}',
-                    '{book_id}', '{isbn}', '{title}', '{author_name}', '{issue_date}', '{return_date}', '{remark}')
-        """
-        cursor.execute(insert_issue_query)
-        connection.commit()
+            insert_issue_query = f"""
+                INSERT INTO borrower_book_detail (srn, student_name, class, section, book_id, isbn, title, author_name, issued_at, end_date, remark)
+                VALUES ('{srn}', '{student_name}', '{request.json.get('class')}', '{request.json.get('section')}',
+                        '{book_id}', '{isbn}', '{title}', '{author_name}', '{issue_date}', '{return_date}', '{remark}')
+            """
+            cursor.execute(insert_issue_query)
+            connection.commit()
 
-        return jsonify({'message': f"Book '{title}' issued successfully", 'status': 'success'})
+            return jsonify({'message': f"Book '{title}' issued successfully", 'status': 'success'})
+        except Exception as e:
+            return jsonify({"status": "error",
+                            "message": str(e)})
 
     @staticmethod
     def allUserBook(id,Isbn):

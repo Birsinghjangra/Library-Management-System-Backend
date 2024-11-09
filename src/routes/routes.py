@@ -4,6 +4,7 @@ from flask import jsonify, send_file
 
 from src.DataTransfer_job.data_transfer_jobs import DataTransfer
 from src.Get_data.get_data import GetData
+from src.csv_uploads.csv_upload import Csv_upload
 from src.data_migration.student import Student
 from src.fetchParameter.fetchparameter import Fetchparameters
 from src.login.login import Login
@@ -38,7 +39,30 @@ class Routes:
 
     @staticmethod
     def csv_import(request):
-        return Login.csv_import()
+        # file = Fetchparameters.fetch_parameter(request, 'file', type=str)
+        file = request.files.get('file')
+        table_name = Fetchparameters.fetch_parameter(request, 'table_name', type=str)
+        if file is None:
+            return jsonify({
+                "status": "error",
+                "message": "No file provided. Please upload a CSV or Excel file."
+            }), 400
+        if file.filename == '':
+            return jsonify({
+                "status": "error",
+                "message": "No selected file. Please select a CSV or Excel file."
+            }), 400
+        if not file.filename.lower().endswith(('.csv', '.xlsx','.xls')):
+            return jsonify({
+                "status": "error",
+                "message": "Invalid file type. Please upload a CSV or Excel file."
+            }), 400
+        file_path = f"./uploads/{file.filename}"
+        file.save(file_path)
+
+        result = Csv_upload.csv_import(file_path,table_name)
+        return result
+
 
     @staticmethod
     def addStudent(request):
@@ -144,3 +168,8 @@ class Routes:
         except Exception as e:
             print(f"Error: {str(e)}")  # Debug print
             return jsonify({"error": str(e)}), 500
+
+    @staticmethod
+    def return_book(request):
+        srn = Fetchparameters.fetch_parameter(request, 'srn', type=str)
+        return "hello"
