@@ -143,3 +143,8 @@ class Routes:
         except Exception as e:
             print(f"Error: {str(e)}")  # Debug print
             return jsonify({"error": str(e)}), 500
+
+    @staticmethod
+    def return_book(request):
+        srn = Fetchparameters.fetch_parameter(request, 'srn', type=str)
+        return "hello"

@@ -77,5 +77,9 @@ def generateBarCode():
 def download_barcode():
     return Routes.download_barcode(request)
 
+@app.route('/return_issue_book', methods= METHODS)
+def return_book():
+    return Routes.return_book(request)
+
 if __name__ == '__main__':
     app.run(debug=True)
