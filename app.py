@@ -11,9 +11,21 @@ METHODS = ['GET', 'POST']
 
 app = Flask(__name__)
 SAVE_DIR = 'barcodes'
+
 if not os.path.exists(SAVE_DIR):
     os.makedirs(SAVE_DIR)
+UPLOAD_FOLDER = './uploads'
+ALLOWED_EXTENSIONS = {'csv', 'xlsx','.xls'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 16 MB file size limit
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
 CORS(app)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/mysql', methods=METHODS)
 def connectionss():
