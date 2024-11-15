@@ -7,6 +7,7 @@ from src.Get_data.get_data import GetData
 from src.csv_uploads.csv_upload import Csv_upload
 from src.data_migration.student import Student
 from src.fetchParameter.fetchparameter import Fetchparameters
+from src.jobs.submitBook import SubmitBook
 from src.login.login import Login
 
 class Routes:
@@ -178,3 +179,11 @@ class Routes:
     def sidebar_menu_config(request):
         AccountId = Fetchparameters.fetch_parameter(request, 'id', type=str)
         return GetData.sidebar_menu_config(AccountId)
+
+    @staticmethod
+    def submit_book(request):
+        srn = Fetchparameters.fetch_parameter(request, 'srn', type=str)
+        book_id = Fetchparameters.fetch_parameter(request, 'book_id', type=str)
+        isbn = Fetchparameters.fetch_parameter(request, 'isbn', type=str)
+
+        return SubmitBook.submit_book(srn,book_id,isbn)

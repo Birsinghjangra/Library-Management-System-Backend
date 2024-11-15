@@ -113,6 +113,11 @@ def return_book():
 def sidebar_menu_config():
     return Routes.sidebar_menu_config(request)
 
+@app.route('/submitbook', methods = METHODS)
+@app_decorator
+def submit_book():
+    return Routes.submit_book(request)
+
 if __name__ == '__main__':
     # app.run(host='0.0.0.0', port=5000)
     app.run(debug=True)

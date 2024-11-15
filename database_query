@@ -52,3 +52,20 @@ CREATE TABLE `signup` (
   `password` varchar(100) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+drop table borrower_book_detail;
+CREATE TABLE `borrower_book_detail` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `srn` INT  NULL,
+  `student_name` VARCHAR(255) NOT NULL,
+  `class` INT NOT NULL,
+  `section` VARCHAR(10) NOT NULL,
+  `book_id` INT  NULL,
+  `isbn` VARCHAR(13)  NULL,
+  `title` VARCHAR(255) NOT NULL,
+  `author_name` VARCHAR(255) NOT NULL,
+  `issued_at` DATE NOT NULL,
+  `end_date` DATE NOT NULL,
+  `fine` INT DEFAULT 0,
+  `remark` VARCHAR(1000) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
