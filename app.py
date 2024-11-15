@@ -18,7 +18,7 @@ if not os.path.exists(SAVE_DIR):
 UPLOAD_FOLDER = './uploads'
 ALLOWED_EXTENSIONS = {'csv', 'xlsx','.xls'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 16 MB file size limit
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB file size limit
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)

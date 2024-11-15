@@ -109,8 +109,9 @@ class Routes:
     @staticmethod
     def calculate_fine(request):
         id = Fetchparameters.fetch_parameter(request, 'id', type=str)
-        Isbn = Fetchparameters.fetch_parameter(request, 'Isbn', type=str)
-        result = GetData.calculate_fine(id, Isbn)
+        Isbn = Fetchparameters.fetch_parameter(request, 'isbn', type=str)
+        book_id = Fetchparameters.fetch_parameter(request, 'book_id', type=str)
+        result = GetData.calculate_fine(id, Isbn,book_id)
         return result
 
     @staticmethod
