@@ -171,10 +171,12 @@ WHERE srn = '{srn}';"""
             end_date_str = datetime.fromtimestamp(book_detail[0]['end_date'] / 1000).strftime('%Y-%m-%d')
             cur_date = datetime.strptime(cur_date_str, '%Y-%m-%d')
             end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
-            if cur_date <= end_date:
+
+            if cur_date <= end_date or total_fine>0:
                 return jsonify({
                     "data": {
-                        "calculate_fine": 0
+                        "calculate_fine": 0,
+                        "total_fine": total_fine
                     },
                     "message": "There is no fine",
                     "status": "success"
