@@ -110,7 +110,9 @@ class Routes:
         id = Fetchparameters.fetch_parameter(request, 'id', type=str)
         Isbn = Fetchparameters.fetch_parameter(request, 'isbn', type=str)
         book_id = Fetchparameters.fetch_parameter(request, 'book_id', type=str)
-        result = GetData.calculate_fine(id, Isbn,book_id)
+        srn = Fetchparameters.fetch_parameter(request, 'srn', type=str)
+        isDamage = Fetchparameters.fetch_parameter(request, 'isDamage', type=str)
+        result = GetData.calculate_fine(srn,id, Isbn,book_id,isDamage)
         return result
 
     @staticmethod
