@@ -63,7 +63,6 @@ class Routes:
         result = Csv_upload.csv_import(file_path,table_name)
         return result
 
-
     @staticmethod
     def addStudent(request):
         srn = Fetchparameters.fetch_parameter(request, 'srn', type=str)
@@ -173,3 +172,8 @@ class Routes:
     def return_book(request):
         srn = Fetchparameters.fetch_parameter(request, 'srn', type=str)
         return "hello"
+
+    @staticmethod
+    def sidebar_menu_config(request):
+        AccountId = Fetchparameters.fetch_parameter(request, 'id', type=str)
+        return GetData.sidebar_menu_config(AccountId)

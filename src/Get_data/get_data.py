@@ -1,4 +1,5 @@
 import json
+import traceback
 
 from flask import jsonify, request
 
@@ -248,3 +249,147 @@ class GetData:
                 connection.close()
         else:
             return {"error": "Failed to connect to the database", "status": "error"}
+
+    @staticmethod
+    def sidebar_menu_config(AccountId):
+        from collections import defaultdict
+        # Get all the required data in a single query
+        connection = Dbconnect.dbconnects()
+        print("type of accont id",type(AccountId))
+        if connection:
+            try:
+                print("account id", AccountId)
+                cursor = connection.cursor()
+                query = f"""
+                    SELECT 
+                        m.id,                        
+                        rp.view, 
+                        rp.edit, 
+                        rp.delete, 
+                        rp.add,
+                        m.parent_id,
+                        m.label, m.route, m.icon, m.display_order
+                    FROM 
+                        roles_permissions rp
+                    LEFT JOIN 
+                        users_details ud ON ud.role = rp.role_id
+                    LEFT JOIN 
+                        menuitems m ON rp.menuId = m.id
+                    WHERE 
+                        ud.id = {AccountId} 
+                    ORDER BY 
+                        m.display_order;
+                    """
+                result = Dataframe_pandas.read_sql_as_df(query)
+                # If no result found
+                if result.empty:
+                    response = {
+                        "message": "Data not found",
+                        "status": "error"
+                    }
+                    return jsonify(response)
+
+                # Convert result to a list of dicts
+                result = result.dropna(subset=['id', 'view', 'icon', 'display_order'])
+                result_json = result.to_dict(orient="records")
+
+                # Use defaultdict to easily build the tree structure
+                menu_items = defaultdict(list)
+                for item in result_json:
+                    # Add the item to the parent-child structure
+                    menu_items[item['parent_id']].append(item)
+
+                # Now build the tree structure (recursive part)
+                def build_menu_tree(parent_id):
+                    tree = []
+                    for item in menu_items.get(parent_id, []):
+                        # Recursively add children to each item
+                        item['childmenu'] = build_menu_tree(item['id'])
+                        tree.append(item)
+                    return tree
+
+                # Start from the root level (parent_id is None)
+                final_result = build_menu_tree(None)
+
+                return jsonify(final_result)
+
+            except Exception as e:
+                response = {
+                    "message": str(e),
+                    "status": "error",
+                    "data": traceback.format_exc()
+                }
+                return jsonify(response)
+
+    @staticmethod
+    def user_childMenu(id, AccountId):
+        # This is now handled by the main `sidebar_menu_config` method
+        return []
+
+    # @staticmethod
+    # def sidebar_menu_config(AccountId):
+    #     connection = Dbconnect.dbconnects()
+    #     if connection:
+    #         try:
+    #             print("account id",AccountId)
+    #             cursor = connection.cursor()
+    #             query = f"""SELECT
+    #                             m.id,
+    #                                 rp.`view`,
+    #                                 rp.edit,
+    #                                 rp.`delete`,
+    #                                 rp.`add`,
+    #                                 m.parent_id,
+    #                                 m.label, m.route, m.icon, m.display_order
+    #                             FROM
+    #                                 roles_permissions rp
+    #                             LEFT JOIN
+    #                                 users_details ud ON ud.`role` = rp.role_id
+    #                             left join menuitems m on rp.menuId = m.id
+    #                             where m.parent_id is null and m.id is not null and ud.id = {AccountId} order by display_order;"""
+    #             result = Dataframe_pandas.read_sql_as_df(query)
+    #             json_data = result.to_json(orient="records")
+    #             result = json.loads(json_data)
+    #             child = []
+    #             if not result:
+    #                 response = {
+    #                     "message": "Data not found", "status": "error"
+    #                 }
+    #                 return jsonify(response)
+    #             for item in result:
+    #                 item['childmenu'] = GetData.user_childMenu(item['id'], AccountId)
+    #                 if not item['childmenu']:
+    #                     item['childmenu'] = child
+    #             return result
+    #         except Exception as e:
+    #             response = {
+    #                 "message": e,
+    #                 "status": "error",
+    #                 "data": traceback.format_exc()
+    #             }
+    #             return jsonify(response)
+    #
+    # @staticmethod
+    # def user_childMenu(id, AccountId):
+    #     query = f"""SELECT m.id,
+    #                             rp.`view`,
+    #                             rp.edit,
+    #                             rp.`delete`,
+    #                             rp.`add`,
+    #                             m.parent_id,
+    #                             m.label, m.route, m.icon, m.display_order
+    #                         FROM
+    #                             roles_permissions rp
+    #                         LEFT JOIN
+    #                             users_details ud ON ud.`role` = rp.role_id
+    #                         left join menuitems m on rp.menuId = m.id
+    #                         where m.parent_id = {id} and ud.id = {AccountId} order by display_order;"""
+    #     result = Dataframe_pandas.read_sql_as_df(query)
+    #     json_data = result.to_json(orient="records")
+    #     result = json.loads(json_data)
+    #     child = []
+    #     for item in result:
+    #         item['childmenu'] = GetData.user_childMenu(item['id'], AccountId)
+    #         if not item['childmenu']:
+    #             item['childmenu'] = child
+    #     return result
