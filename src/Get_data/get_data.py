@@ -3,6 +3,7 @@ import traceback
 
 from flask import jsonify, request
 
+# from app import app
 from src.DB_connect.dbconnection import Dbconnect
 from src.dataframe_df.dataframe_operations import Dataframe_pandas
 from datetime import datetime, timedelta
@@ -147,43 +148,57 @@ class GetData:
                             })
 
     @staticmethod
-    def calculate_fine(id, isb):
-        get_fine = f"SELECT * from  borrower_book_detail WHERE id_card ='{id}' AND isbn= '{isbn}'"
+    def calculate_fine(id, isbn, book_id):
+        get_fine = f"SELECT * from borrower_book_detail WHERE id ='{id}' AND isbn= '{isbn}' AND book_id={book_id}"
         df = Dataframe_pandas.read_sql_as_df(get_fine)
-        connection = Dbconnect.dbconnects()
-        cursor= connection.cursor()
         if df.empty:
-            return jsonify({'message': 'There is no book issued to this user',
-                            "status": "error"})
-        else:
+            return jsonify({
+                'message': 'There is no book issued to this user',
+                "status": "error"
+            }), 404
+        # Connect to the database
+        connection = Dbconnect.dbconnects()
+        cursor = connection.cursor()
+        try:
             cur_date_str = datetime.now().strftime("%Y-%m-%d")
             book_detail = json.loads(df.to_json(orient='records'))
             end_date_str = datetime.fromtimestamp(book_detail[0]['end_date'] / 1000).strftime('%Y-%m-%d')
-
             cur_date = datetime.strptime(cur_date_str, '%Y-%m-%d')
             end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
             if cur_date <= end_date:
-                jsonify({
+                return jsonify({
                     "data": {
                         "calculate_fine": 0
                     },
                     "message": "There is no fine",
                     "status": "success"
                 })
-            else:
-                difference_in_days = (cur_date - end_date).days
-                calculate_fine = int(difference_in_days) * 10
-                update_fine = f"""UPDATE borrower_book_detail SET fine = '{calculate_fine}' where isbn='{isbn}'"""
-                cursor.execute(update_fine)
-                connection.commit()
-                return jsonify({
-                                "data": {
-                                        "calculate_fine": calculate_fine,
-                                        "late_days": difference_in_days
-                                        },
-                                "message": "Fine has been calculated",
-                                "status": "success"
-                                 })
+
+            difference_in_days = (cur_date - end_date).days
+            calculate_fine = difference_in_days * 10  # Assuming fine is 10 units per day
+
+            update_fine = f"""UPDATE borrower_book_detail SET fine = '{calculate_fine}' where isbn='{isbn}'"""
+            cursor.execute(update_fine)
+            connection.commit()
+
+            return jsonify({
+                "data": {
+                    "calculate_fine": calculate_fine,
+                    "late_days": difference_in_days
+                },
+                "message": "Fine has been calculated",
+                "status": "success"
+            })
+        except Exception as e:
+            return jsonify({
+                "message": "Internal server error",
+                "status": "error",
+                "error": str(e)
+            }), 500
+
+        finally:
+            cursor.close()
+            connection.close()
 
     @staticmethod
     def submit_fine(id, isbn):
