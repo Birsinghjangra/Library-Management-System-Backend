@@ -45,7 +45,7 @@ def db_operations():
 def login_api():
     return Routes.login_api(request)
 
-@app.route('/csvimport',methods=METHODS)
+@app.route('/csv_import',methods=METHODS)
 def csv_import():
     return Routes.csv_import(request)
 
