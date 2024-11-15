@@ -69,3 +69,6 @@ CREATE TABLE `borrower_book_detail` (
   `fine` INT DEFAULT 0,
   `remark` VARCHAR(1000) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+ALTER TABLE borrower_book_detail
+ADD COLUMN isSubmit BOOLEAN DEFAULT 0;

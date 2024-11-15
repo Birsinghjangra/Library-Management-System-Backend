@@ -16,9 +16,8 @@ class SubmitBook:
                 for row in book_json:
                     id = row['id']
                     book_id= row['book_id']
-                    update_user_details= f"""UPDATE borrower_book_detail SET book_id = null, isbn = null
+                    update_user_details= f"""UPDATE borrower_book_detail SET isSubmit = 1
             WHERE id = {id}"""
-                    print("book id line 20.",book_id)
                     book_id = int(book_id)
                     update_book = f"""UPDATE book SET isCheckedOut = 0
             WHERE book_id = {book_id}"""
@@ -27,17 +26,13 @@ class SubmitBook:
                     try:
                         # Execute the first update query
                         cursor.execute(update_user_details)
-                        print(f"Updated borrower_book_detail with book_id: {book_id}")
                     except Exception as e:
-                        print(f"Error executing update_user_details query: {str(e)}")
                         connection.rollback()  # Rollback on error
                         return e
                     try:
                         # Execute the second update query
                         cursor.execute(update_book)
-                        print(f"Updated book status for book_id: {book_id}")
                     except Exception as e:
-                        print(f"Error executing update_book query: {str(e)}")
                         connection.rollback()
                         return e
                     # cursor.execute(update_user_details)

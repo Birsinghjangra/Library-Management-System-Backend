@@ -148,20 +148,26 @@ class GetData:
                             })
 
     @staticmethod
-    def calculate_fine(id, isbn, book_id):
-        get_fine = f"SELECT * from borrower_book_detail WHERE id ='{id}' AND isbn= '{isbn}' AND book_id={book_id}"
-        df = Dataframe_pandas.read_sql_as_df(get_fine)
-        if df.empty:
+    def calculate_fine(srn,id, isbn, book_id,isDamage):
+        currentBook_fine = f"SELECT * from borrower_book_detail WHERE id ='{id}' AND isbn= '{isbn}' AND book_id={book_id}"
+        totalFine_query= f"""SELECT SUM(fine) AS total_fine
+FROM borrower_book_detail
+WHERE srn = '{srn}';"""
+        currentBook_df = Dataframe_pandas.read_sql_as_df(currentBook_fine)
+        totalFine_df = Dataframe_pandas.read_sql_as_df(totalFine_query)
+        if currentBook_df.empty:
             return jsonify({
                 'message': 'There is no book issued to this user',
                 "status": "error"
             }), 404
         # Connect to the database
+        total_fine = totalFine_df['total_fine'].iloc[0] if not totalFine_df.empty else 0
+
         connection = Dbconnect.dbconnects()
         cursor = connection.cursor()
         try:
             cur_date_str = datetime.now().strftime("%Y-%m-%d")
-            book_detail = json.loads(df.to_json(orient='records'))
+            book_detail = json.loads(currentBook_df.to_json(orient='records'))
             end_date_str = datetime.fromtimestamp(book_detail[0]['end_date'] / 1000).strftime('%Y-%m-%d')
             cur_date = datetime.strptime(cur_date_str, '%Y-%m-%d')
             end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
@@ -175,15 +181,17 @@ class GetData:
                 })
 
             difference_in_days = (cur_date - end_date).days
-            calculate_fine = difference_in_days * 10  # Assuming fine is 10 units per day
-
+            calculate_fine = difference_in_days * 5  # Assuming fine is 5 units per day
+            if isDamage == 1:
+                calculate_fine *= 1.2
             update_fine = f"""UPDATE borrower_book_detail SET fine = '{calculate_fine}' where isbn='{isbn}'"""
             cursor.execute(update_fine)
             connection.commit()
 
             return jsonify({
                 "data": {
-                    "calculate_fine": calculate_fine,
+                    "currentBook_fine": calculate_fine,
+                    "total_fine":total_fine,
                     "late_days": difference_in_days
                 },
                 "message": "Fine has been calculated",
@@ -191,10 +199,10 @@ class GetData:
             })
         except Exception as e:
             return jsonify({
-                "message": "Internal server error",
+                "message": f"""{str(e)}""",
                 "status": "error",
-                "error": str(e)
-            }), 500
+                "data":[]
+            })
 
         finally:
             cursor.close()
@@ -205,7 +213,7 @@ class GetData:
         connection = Dbconnect.dbconnects()
         cursor = connection.cursor()
         default_fine = 0
-        update_fine = f"""UPDATE borrower_book_detail SET fine = '{default_fine}' where isbn='{isbn}' AND id_card='{id}'"""
+        update_fine = f"""UPDATE borrower_book_detail SET fine = '{default_fine}' where isbn='{isbn}' AND id='{id}'"""
         cursor.execute(update_fine)
         connection.commit()
         return jsonify({
