@@ -109,22 +109,25 @@ class DataTransfer:
 
     @staticmethod
     def update_data_operation(row_id, column_data, table_name):
-        # import pdb
-        # pdb.set_trace()
         try:
             connection = Dbconnect.dbconnects()
-            if connection:
-                data_df = pd.DataFrame([column_data])
-                set_clause = ', '.join([f"{key} = '{value}'" for key, value in column_data.items()])
-                update_query = f"UPDATE {table_name} SET {set_clause} WHERE srn = '{row_id}'"
-                cursor = connection.cursor()
-                cursor.execute(update_query)
-                connection.commit()
-                if cursor.rowcount > 0:
-                    return {'status': 'success', 'message': 'Updated successfully'}
-                else:
-                    return {'status': 'error', 'message': 'No rows were updated'}
-            else:
+            if not connection:
                 return {'status': 'error', 'message': 'Failed to connect to the database'}
+
+            if not column_data:
+                return {'status': 'error', 'message': 'No column data provided'}
+
+            set_clause = ', '.join([f"{key} = %s" for key in column_data.keys()])
+            update_query = f"UPDATE {table_name} SET {set_clause} WHERE srn = %s"
+
+            cursor = connection.cursor()
+            cursor.execute(update_query, list(column_data.values()) + [row_id])
+            connection.commit()
+
+            if cursor.rowcount > 0:
+                return {'status': 'success', 'message': 'Updated successfully'}
+            else:
+                return {'status': 'error', 'message': 'No rows were updated'}
+
         except Exception as e:
-            return {'status': 'error', 'message': str(e)}
+            return {'status': 'error', 'message': f"An error occurred: {str(e)}"}
