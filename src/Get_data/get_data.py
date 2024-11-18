@@ -40,10 +40,11 @@ class GetData:
         try:
             # Modify SQL query to use LIKE for partial matching
             sql_query = f"""
-            SELECT * FROM {Table_name} 
-            WHERE srn LIKE '%{srn}%' 
-            OR student_name LIKE '%{srn}%'
-            """
+            SELECT * 
+            FROM {Table_name} 
+            WHERE (srn LIKE '%{srn}%' OR student_name LIKE '%{srn}%') 
+            AND isActive = 1;"""
+
             df = Dataframe_pandas.read_sql_as_df(sql_query)
             if df is not None:
                 # Convert DataFrame to JSON
@@ -66,7 +67,7 @@ class GetData:
             # if isbn != '':
             #     sql_query = f"SELECT Title,isbn FROM {Table_name} WHERE isbn={isbn }AND isCheckedOut = 0"
             # else:
-            sql_query = f"SELECT DISTINCT isbn, title, price FROM {Table_name} WHERE title LIKE '%{title}%' AND isCheckedOut = 0"
+            sql_query = f"SELECT DISTINCT isbn, title, price FROM {Table_name} WHERE title LIKE '%{title}%' AND isCheckedOut = 0 AND isActive = 1 "
             # Pass the id parameter to the read_sql_as_df function
             df = Dataframe_pandas.read_sql_as_df(sql_query)
             if df is not None:
@@ -90,7 +91,7 @@ class GetData:
             cursor = connection.cursor()
 
             # Check if the book is available for issuing
-            query = f"SELECT b.book_id, b.isbn, b.title, b.author_name, b.publication, s.srn, s.student_name, s.class, s.roll_no FROM book AS b LEFT JOIN student AS s ON s.srn = b.srn where b.isbn={isbn} AND b.isCheckedOut = 0"
+            query = f"SELECT b.book_id, b.isbn, b.title, b.author_name, b.publication, s.srn, s.student_name, s.class, s.roll_no FROM book AS b LEFT JOIN student AS s ON s.srn = b.srn where b.isbn={isbn} AND b.isCheckedOut = 0 AND b.isActive = 1"
             book_details= Dataframe_pandas.read_sql_as_df(query)
 
             if book_details.empty:

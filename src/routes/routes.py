@@ -40,7 +40,6 @@ class Routes:
 
     @staticmethod
     def csv_import(request):
-        # file = Fetchparameters.fetch_parameter(request, 'file', type=str)
         file = request.files.get('file')
         table_name = Fetchparameters.fetch_parameter(request, 'table_name', type=str)
         if file is None:
@@ -187,5 +186,10 @@ class Routes:
         srn = Fetchparameters.fetch_parameter(request, 'srn', type=str)
         book_id = Fetchparameters.fetch_parameter(request, 'book_id', type=str)
         isbn = Fetchparameters.fetch_parameter(request, 'isbn', type=str)
-
         return SubmitBook.submit_book(srn,book_id,isbn)
+
+    @staticmethod
+    def toggleStatus(request):
+        srn = Fetchparameters.fetch_parameter(request, 'srn', type=str)
+        book_id = Fetchparameters.fetch_parameter(request, 'book_id', type=str)
+        return DataTransfer.toggleStatus(srn=srn, book_id=book_id)

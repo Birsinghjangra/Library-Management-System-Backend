@@ -1,3 +1,5 @@
+-- lms.student definition
+
 CREATE TABLE `student` (
   `srn` varchar(20) NOT NULL,
   `student_name` varchar(100) NOT NULL,
@@ -7,9 +9,12 @@ CREATE TABLE `student` (
   `phone` varchar(10) NOT NULL,
   `address` varchar(1000) NOT NULL,
   `createdOn` date DEFAULT NULL,
+  `isActive` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`srn`),
-  UNIQUE KEY `unique_roll_no_class_section` (`class`, `section`, `roll_no`)
+  UNIQUE KEY `unique_roll_no_class_section` (`class`,`section`,`roll_no`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- lms.book definition
 
 CREATE TABLE `book` (
   `book_id` int NOT NULL AUTO_INCREMENT,
@@ -20,40 +25,52 @@ CREATE TABLE `book` (
   `price` int NOT NULL,
   `edition` int NOT NULL,
   `quantity` int NOT NULL DEFAULT '1',
-  `isCheckedOut` int DEFAULT NULL,
+  `isCheckedOut` tinyint(1) DEFAULT NULL,
   `srn` varchar(20) DEFAULT NULL,
+  `isActive` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`book_id`),
   KEY `fk_student_srn` (`srn`),
   CONSTRAINT `fk_student_srn` FOREIGN KEY (`srn`) REFERENCES `student` (`srn`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci AUTO_INCREMENT=1001;
+) ENGINE=InnoDB AUTO_INCREMENT=1001 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- lms.borrower_book_detail definition
 
 CREATE TABLE `borrower_book_detail` (
-  `srn` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
+  `srn` int DEFAULT NULL,
   `student_name` varchar(255) NOT NULL,
   `class` int NOT NULL,
   `section` varchar(10) NOT NULL,
-  `book_id` int NOT NULL,
-  `isbn` varchar(13) NOT NULL,
+  `book_id` int DEFAULT NULL,
+  `isbn` varchar(13) DEFAULT NULL,
   `title` varchar(255) NOT NULL,
   `author_name` varchar(255) NOT NULL,
   `issued_at` date NOT NULL,
   `end_date` date NOT NULL,
   `fine` int DEFAULT '0',
   `remark` varchar(1000) DEFAULT NULL,
-  PRIMARY KEY (`srn`,`book_id`,`isbn`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- lms.signup definition
-
-CREATE TABLE `signup` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `username` varchar(50) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `password` varchar(100) NOT NULL,
+  `isSubmit` tinyint(1) DEFAULT '0',
+  `isDamage` tinyint(1) DEFAULT '0',
+  `isLost` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-<<<<<<< HEAD
+-- lms.users_details definition
+
+CREATE TABLE `users_details` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `phone` varchar(15) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `address` varchar(255) NOT NULL,
+  `role` varchar(55) NOT NULL,
+  `action` tinyint(1) NOT NULL,
+  `confirmPassword` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- lms.menuitems definition
 
 CREATE TABLE `menuitems` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -66,6 +83,7 @@ CREATE TABLE `menuitems` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- lms.roles definition
 
 CREATE TABLE `roles` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -136,52 +154,7 @@ INSERT INTO roles_permissions
 (id, role_id, menuId, `view`, edit, `delete`, `add`)
 VALUES(11, 1, 7, 1, 0, 0, 0);
 
-CREATE TABLE `student` (
-  `srn` varchar(20) NOT NULL,
-  `student_name` varchar(100) NOT NULL,
-  `class` varchar(5) NOT NULL,
-  `section` varchar(5) NOT NULL,
-  `roll_no` varchar(10) NOT NULL,
-  `phone` varchar(10) NOT NULL,
-  `address` varchar(1000) NOT NULL,
-  `createdOn` date DEFAULT NULL,
-  PRIMARY KEY (`srn`),
-  UNIQUE KEY `unique_roll_no_class_section` (`class`, `section`, `roll_no`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `users_details` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `phone` varchar(15) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `address` varchar(255) NOT NULL,
-  `role` varchar(55) NOT NULL,
-  `action` tinyint(1) NOT NULL,
-  `confirmPassword` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO users_details
 (id, name, email, phone, password, address, `role`, `action`, confirmPassword)
 VALUES(0, 'Bir', 'Bir@gmail.com', '1234567890', '12345678', 'Mathura', '1', 1, '12345678');
-
-drop table borrower_book_detail;
-CREATE TABLE `borrower_book_detail` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `srn` INT  NULL,
-  `student_name` VARCHAR(255) NOT NULL,
-  `class` INT NOT NULL,
-  `section` VARCHAR(10) NOT NULL,
-  `book_id` INT  NULL,
-  `isbn` VARCHAR(13)  NULL,
-  `title` VARCHAR(255) NOT NULL,
-  `author_name` VARCHAR(255) NOT NULL,
-  `issued_at` DATE NOT NULL,
-  `end_date` DATE NOT NULL,
-  `fine` INT DEFAULT 0,
-  `remark` VARCHAR(1000) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-ALTER TABLE borrower_book_detail
-ADD COLUMN isSubmit BOOLEAN DEFAULT 0;

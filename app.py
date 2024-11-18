@@ -50,7 +50,7 @@ def login_api():
 
 @app.route('/csv_import',methods=METHODS)
 # @app.route('/csvimport',methods=METHODS)
-@app_decorator
+# @app_decorator
 def csv_import():
     return Routes.csv_import(request)
 
@@ -58,6 +58,11 @@ def csv_import():
 @app_decorator
 def addStudent():
     return Routes.addStudent(request)
+
+@app.route("/toggleStatus",methods=METHODS)
+# @app_decorator
+def toggleStatus():
+    return Routes.toggleStatus(request)
 
 @app.route("/getData_common",methods=METHODS)
 @app_decorator

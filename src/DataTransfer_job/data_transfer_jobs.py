@@ -131,3 +131,70 @@ class DataTransfer:
 
         except Exception as e:
             return {'status': 'error', 'message': f"An error occurred: {str(e)}"}
+
+    @staticmethod
+    def toggleStatus(srn=None, book_id=None):
+        try:
+            connection = Dbconnect.dbconnects()
+            if not connection:
+                return {'status': 'error', 'message': 'Failed to connect to the database'}
+
+            cursor = connection.cursor()
+
+            if srn:
+                # Toggle for student
+                select_query = "SELECT isActive FROM student WHERE srn = %s"
+                cursor.execute(select_query, (srn,))
+                result = cursor.fetchone()
+
+                if not result:
+                    return {'status': 'error', 'message': 'Student not found'}, 404
+
+                current_status = result[0]
+                new_status = 0 if current_status == 1 else 1
+
+                # Update the isActive field for the student
+                update_query = "UPDATE student SET isActive = %s WHERE srn = %s"
+                cursor.execute(update_query, (new_status, srn))
+                connection.commit()
+
+                return {
+                           'message': f'Student with SRN {srn} isActive status toggled to {new_status}',
+                           'srn': srn,
+                           'new_status': new_status
+                       }, 200
+
+            elif book_id:
+                # Toggle for book
+                select_query = "SELECT isActive FROM book WHERE book_id = %s"
+                cursor.execute(select_query, (book_id,))
+                result = cursor.fetchone()
+
+                if not result:
+                    return {'status': 'error', 'message': 'Book not found'}, 404
+
+                current_status = result[0]
+                new_status = 0 if current_status == 1 else 1
+
+                # Update the isActive field for the book
+                update_query = "UPDATE book SET isActive = %s WHERE book_id = %s"
+                cursor.execute(update_query, (new_status, book_id))
+                connection.commit()
+
+                return {
+                           'message': f'Book with ID {book_id} isActive status toggled to {new_status}',
+                           'book_id': book_id,
+                           'new_status': new_status
+                       }, 200
+
+            else:
+                return {'status': 'error', 'message': 'Either SRN or Book ID is required'}, 400
+
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}, 500
+
+        finally:
+            if 'cursor' in locals():
+                cursor.close()
+            if connection:
+                connection.close()
