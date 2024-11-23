@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  # Angular Frontend
+  frontend:
+    build:
+      context: ./Library-Management-System-Frontend
+    ports:
+      - "80:80"
+    networks:
+      - app-network
+
+  # Flask Backend
+  backend:
+    build:
+      context: ./Library-Management-System-Backend
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=app.py
+    networks:
+      - app-network
+
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: admin123
+      MYSQL_DATABASE: lms
+      MYSQL_USER: root
+      MYSQL_PASSWORD: admin123
+    ports:
+      - "3306:3306"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
