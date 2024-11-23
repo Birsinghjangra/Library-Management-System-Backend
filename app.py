@@ -59,8 +59,13 @@ def csv_import():
 def addStudent():
     return Routes.addStudent(request)
 
+@app.route("/addBook",methods=METHODS)
+@app_decorator
+def addBook():
+    return Routes.addBook(request)
+
 @app.route("/toggleStatus",methods=METHODS)
-# @app_decorator
+@app_decorator
 def toggleStatus():
     return Routes.toggleStatus(request)
 
@@ -123,6 +128,16 @@ def sidebar_menu_config():
 @app_decorator
 def submit_book():
     return Routes.submit_book(request)
+
+@app.route('/getreport', methods = METHODS)
+@app_decorator
+def getreport():
+    return Routes.getreport(request)
+
+@app.route('/exportreport', methods = METHODS)
+@app_decorator
+def exportreport():
+    return Routes.exportreport(request)
 
 if __name__ == '__main__':
     # app.run(host='0.0.0.0', port=5000)

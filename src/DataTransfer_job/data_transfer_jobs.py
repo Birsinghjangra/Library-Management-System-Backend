@@ -1,13 +1,8 @@
-from pickle import STRING
 import mysql
-import pandas as pd
-from flask import jsonify
 
 from src.DB_connect.dbconnection import Dbconnect
-import json
+from src.data_migration.table_data import TableData
 
-from src.data_migration.student import Student
-from src.dataframe_df.dataframe_operations import Dataframe_pandas
 
 class DataTransfer:
     @staticmethod
@@ -35,48 +30,52 @@ class DataTransfer:
             validation_flag = 0
 
             if table_name == 'student':
-                result = Student.addStudent(column_data)
+                result = TableData.addStudent(column_data)
                 return result
 
-            if connection:
-                # Extract quantity from column_data if available
-                quantity = column_data.get('quantity', 1)  # Default to 1 if not specified
-                # Remove quantity from column_data to avoid insertion into the database
-                column_data.pop('quantity', None)
+            if table_name == 'book':
+                result = TableData.addBook(column_data)
+                return result
 
-                # Prepare a list to hold data for multiple rows
-                data_to_insert = []
-
-                # Validate quantity
-                if quantity is None or quantity < 1:
-                    return {
-                        "message": "Quantity must be at least 1.",
-                        "status": "error"
-                    }
-
-                for i in range(quantity):
-                    # Create a copy of the data to insert
-                    row_data = column_data.copy()  # Make a copy to avoid overwriting
-
-                    # Set quantity to 1 for each row
-                    row_data['quantity'] = 1  # Set quantity to 1 for each row
-                    data_to_insert.append(row_data)
-
-                # Normalize the data and create a DataFrame
-                data_set = pd.json_normalize(data_to_insert)
-                Dataframe_pandas.write_df_to_sql(data_set, table_name, operation='REPLACE')
-
-                if validation_flag == 1:
-                    message = 'Fields have an Empty Value'
-                    status = "error"
-                else:
-                    message = 'Books added successfully'
-                    status = 'success'
-
-                return {
-                    "message": message,
-                    "status": status
-                }
+            # if connection:
+            #     # Extract quantity from column_data if available
+            #     quantity = column_data.get('quantity', 1)  # Default to 1 if not specified
+            #     # Remove quantity from column_data to avoid insertion into the database
+            #     column_data.pop('quantity', None)
+            #
+            #     # Prepare a list to hold data for multiple rows
+            #     data_to_insert = []
+            #
+            #     # Validate quantity
+            #     if quantity is None or quantity < 1:
+            #         return {
+            #             "message": "Quantity must be at least 1.",
+            #             "status": "error"
+            #         }
+            #
+            #     for i in range(quantity):
+            #         # Create a copy of the data to insert
+            #         row_data = column_data.copy()  # Make a copy to avoid overwriting
+            #
+            #         # Set quantity to 1 for each row
+            #         row_data['quantity'] = 1  # Set quantity to 1 for each row
+            #         data_to_insert.append(row_data)
+            #
+            #     # Normalize the data and create a DataFrame
+            #     data_set = pd.json_normalize(data_to_insert)
+            #     Dataframe_pandas.write_df_to_sql(data_set, table_name, operation='REPLACE')
+            #
+            #     if validation_flag == 1:
+            #         message = 'Fields have an Empty Value'
+            #         status = "error"
+            #     else:
+            #         message = 'Books added successfully'
+            #         status = 'success'
+            #
+                # return {
+                #     "message": message,
+                #     "status": status
+                # }
 
         except Exception as e:
             return {
@@ -117,17 +116,27 @@ class DataTransfer:
             if not column_data:
                 return {'status': 'error', 'message': 'No column data provided'}
 
+            # Create the SET clause by joining the column names with placeholders
             set_clause = ', '.join([f"{key} = %s" for key in column_data.keys()])
-            update_query = f"UPDATE {table_name} SET {set_clause} WHERE srn = %s"
 
+            # Determine the table-specific WHERE clause
+            if table_name == "book":
+                update_query = f"UPDATE {table_name} SET {set_clause} WHERE book_id = %s"
+            elif table_name == "student":
+                update_query = f"UPDATE {table_name} SET {set_clause} WHERE srn = %s"
+            else:
+                update_query = f"UPDATE {table_name} SET {set_clause} WHERE id = %s"
+
+            # Prepare the list of values, including the row_id at the end
+            values = list(column_data.values()) + [row_id]
+
+            # Execute the query with the correct parameters
             cursor = connection.cursor()
-            cursor.execute(update_query, list(column_data.values()) + [row_id])
+            cursor.execute(update_query, values)
             connection.commit()
 
-            if cursor.rowcount > 0:
-                return {'status': 'success', 'message': 'Updated successfully'}
-            else:
-                return {'status': 'error', 'message': 'No rows were updated'}
+            # Return a success message without checking for rows updated
+            return {'status': 'success', 'message': 'Update operation completed'}
 
         except Exception as e:
             return {'status': 'error', 'message': f"An error occurred: {str(e)}"}

@@ -9,7 +9,7 @@ CREATE TABLE `student` (
   `phone` varchar(10) NOT NULL,
   `address` varchar(1000) NOT NULL,
   `createdOn` date DEFAULT NULL,
-  `isActive` tinyint(1) DEFAULT '1',
+  `isActive` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`srn`),
   UNIQUE KEY `unique_roll_no_class_section` (`class`,`section`,`roll_no`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -25,9 +25,10 @@ CREATE TABLE `book` (
   `price` int NOT NULL,
   `edition` int NOT NULL,
   `quantity` int NOT NULL DEFAULT '1',
-  `isCheckedOut` tinyint(1) DEFAULT NULL,
+  `isCheckedOut` int NOT NULL DEFAULT '0',
   `srn` varchar(20) DEFAULT NULL,
-  `isActive` tinyint(1) DEFAULT '1',
+  `isActive` int NOT NULL DEFAULT '1',
+  `createdOn` date DEFAULT NULL,
   PRIMARY KEY (`book_id`),
   KEY `fk_student_srn` (`srn`),
   CONSTRAINT `fk_student_srn` FOREIGN KEY (`srn`) REFERENCES `student` (`srn`) ON DELETE SET NULL ON UPDATE CASCADE
@@ -49,9 +50,9 @@ CREATE TABLE `borrower_book_detail` (
   `end_date` date NOT NULL,
   `fine` int DEFAULT '0',
   `remark` varchar(1000) DEFAULT NULL,
-  `isSubmit` tinyint(1) DEFAULT '0',
-  `isDamage` tinyint(1) DEFAULT '0',
-  `isLost` tinyint(1) DEFAULT '0',
+  `isSubmit` int NOT NULL DEFAULT '0',
+  `isDamage` int NOT NULL DEFAULT '0',
+  `isLost` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -65,7 +66,7 @@ CREATE TABLE `users_details` (
   `password` varchar(255) NOT NULL,
   `address` varchar(255) NOT NULL,
   `role` varchar(55) NOT NULL,
-  `action` tinyint(1) NOT NULL,
+  `action` int NOT NULL,
   `confirmPassword` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -88,7 +89,7 @@ CREATE TABLE `menuitems` (
 CREATE TABLE `roles` (
   `id` int NOT NULL AUTO_INCREMENT,
   `role_name` varchar(255) DEFAULT NULL,
-  `status` tinyint NOT NULL DEFAULT '1',
+  `status` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -98,10 +99,10 @@ CREATE TABLE `roles_permissions` (
   `id` int NOT NULL AUTO_INCREMENT,
   `role_id` int NOT NULL,
   `menuId` int DEFAULT NULL,
-  `view` tinyint(1) NOT NULL DEFAULT '0',
-  `edit` tinyint(1) NOT NULL DEFAULT '0',
-  `delete` tinyint(1) NOT NULL DEFAULT '0',
-  `add` tinyint(1) NOT NULL DEFAULT '0',
+  `view` int NOT NULL DEFAULT '0',
+  `edit` int NOT NULL DEFAULT '0',
+  `delete` int NOT NULL DEFAULT '0',
+  `add` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 

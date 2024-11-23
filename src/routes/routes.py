@@ -1,14 +1,25 @@
+import io
 import os
-import glob
+from fpdf import FPDF
+import pandas as pd
 from flask import jsonify, send_file
+from io import BytesIO
+import pandas as pd
+from flask import send_file
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from src.DB_connect.dbconnection import Dbconnect
 
+from src.DB_connect.dbconnection import Dbconnect
 from src.DataTransfer_job.data_transfer_jobs import DataTransfer
 from src.Get_data.get_data import GetData
 from src.csv_uploads.csv_upload import Csv_upload
-from src.data_migration.student import Student
+from src.data_migration.table_data import TableData
 from src.fetchParameter.fetchparameter import Fetchparameters
 from src.jobs.submitBook import SubmitBook
 from src.login.login import Login
+from src.report.report import Generatereport
+
 
 class Routes:
     @staticmethod
@@ -72,14 +83,27 @@ class Routes:
         roll_no = Fetchparameters.fetch_parameter(request, 'roll_no', type=str)
         phone = Fetchparameters.fetch_parameter(request, 'phone', type=str)
         address = Fetchparameters.fetch_parameter(request, 'address', type=str)
-        result = Student.addStudent(srn, student_name, class_, section, roll_no, phone, address)
+        result = TableData.addStudent(srn, student_name, class_, section, roll_no, phone, address)
+        return result
+
+    @staticmethod
+    def addBook(request):
+        isbn = Fetchparameters.fetch_parameter(request, 'isbn', type=str)
+        title = Fetchparameters.fetch_parameter(request, 'title', type=str)
+        publication = Fetchparameters.fetch_parameter(request, 'publication', type=str)
+        author_name = Fetchparameters.fetch_parameter(request, 'author_name', type=str)
+        price = Fetchparameters.fetch_parameter(request, 'price', type=str)
+        edition = Fetchparameters.fetch_parameter(request, 'edition', type=str)
+        quantity = Fetchparameters.fetch_parameter(request, 'quantity', type=str)
+        result = TableData.addStudent(isbn, title, publication, author_name, price, edition, quantity)
         return result
 
     @staticmethod
     def getData_common(request):
-        id = Fetchparameters.fetch_parameter(request,'id', type = str)
+        id = Fetchparameters.fetch_parameter(request, 'id', type=str)
+        srn = Fetchparameters.fetch_parameter(request,'srn', type = str)
         Table_name = Fetchparameters.fetch_parameter(request, 'Table_name', type=str)
-        result = GetData.getData_common(id,Table_name)
+        result = GetData.getData_common(id,srn,Table_name)
         return result
 
     @staticmethod
@@ -131,21 +155,9 @@ class Routes:
     @staticmethod
     def generateBarCode(request):
         from src.data_migration.barcode import BarcodeGenerator
-        # bookName = Fetchparameters.fetch_parameter(request, 'bookName', type=str)
-        # edition = Fetchparameters.fetch_parameter(request, 'edition', type=str)
-        # author = Fetchparameters.fetch_parameter(request, 'author', type=str)
         isbn = Fetchparameters.fetch_parameter(request, 'isbn', type=str)
         if not isbn:
             return jsonify({"error": "ISBN is required"}), 400
-        # barcode_path, error_response, status_code = BarcodeGenerator.generate_barcode(isbn)
-        # if error_response:
-        #     return error_response, status_code
-        # return send_file(
-        #     barcode_path,
-        #     as_attachment=True,
-        #     download_name=f"barcode_{isbn}.png",  # Customize the filename
-        #     mimetype='image/png'  # Set the MIME type
-        # )
 
         result = BarcodeGenerator.generate_barcode(isbn)
         return result
@@ -186,10 +198,135 @@ class Routes:
         srn = Fetchparameters.fetch_parameter(request, 'srn', type=str)
         book_id = Fetchparameters.fetch_parameter(request, 'book_id', type=str)
         isbn = Fetchparameters.fetch_parameter(request, 'isbn', type=str)
-        return SubmitBook.submit_book(srn,book_id,isbn)
+        isDamage = Fetchparameters.fetch_parameter(request, 'isDamage', type=str)
+        isLost = Fetchparameters.fetch_parameter(request, 'isLost', type=str)
+        return SubmitBook.submit_book(srn,book_id,isbn,isDamage,isLost)
 
     @staticmethod
     def toggleStatus(request):
         srn = Fetchparameters.fetch_parameter(request, 'srn', type=str)
         book_id = Fetchparameters.fetch_parameter(request, 'book_id', type=str)
-        return DataTransfer.toggleStatus(srn=srn, book_id=book_id)
+        return DataTransfer.toggleStatus(srn, book_id)
+
+    @staticmethod
+    def getreport(request):
+        query = Fetchparameters.fetch_parameter(request, 'query', type=str)
+        return Generatereport.getreportdata(query)
+
+    @staticmethod
+    def exportreport(request):
+        # Fetch query and format from request
+        query = Fetchparameters.fetch_parameter(request, 'query', type=str)
+        report_format = Fetchparameters.fetch_parameter(request, 'format', type=str)
+
+        try:
+            # Log received query and format
+            print(f"Received query: {query}, format: {report_format}")
+
+            # Fetch data from the database directly using the query
+            connection = Dbconnect.dbconnects()
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute(query)
+            result = cursor.fetchall()
+            cursor.close()
+            connection.close()
+            print(f"Query result: {result}")
+
+            # Convert the result to a pandas DataFrame
+            df = pd.DataFrame(result)
+            print("DataFrame created successfully")
+
+            if report_format == 'pdf':
+                # Generate PDF from the DataFrame
+                buffer = BytesIO()
+                c = canvas.Canvas(buffer, pagesize=letter)
+                page_width, page_height = letter
+
+                # Calculate dynamic column widths based on content
+                column_widths = []
+                for col in df.columns:
+                    max_length = max([len(str(col))] + [len(str(value)) for value in df[col]])
+                    column_width = max_length * 10
+                    column_widths.append(column_width)
+
+                # Ensure total width does not exceed the page width
+                total_table_width = sum(column_widths)
+                if total_table_width > (page_width - 100):  # Allow for margins
+                    scaling_factor = (page_width - 100) / total_table_width
+                    column_widths = [int(width * scaling_factor) for width in column_widths]
+
+                # Set initial positions
+                x_start = 30  # Left margin
+                y_position = page_height - 50  # Start below the top margin
+                row_height = 20  # Height of each row
+                cell_margin = -8  # Top margin for cell data
+
+                # Add Title (centered)
+                c.setFont("Helvetica-Bold", 14)
+                title_text = "Exported Report"
+                title_width = c.stringWidth(title_text, "Helvetica-Bold", 14)
+                c.drawString((page_width - title_width) / 2, y_position + 10, title_text)  # Center the title
+                y_position -= 1  # Adjust y_position for title margin
+
+                # Draw Table Headers
+                c.setFont("Helvetica-Bold", 10)
+                for col_idx, col_name in enumerate(df.columns):
+                    x_center = x_start + (column_widths[col_idx] / 2)
+                    y_center = y_position - row_height / 2 + 5 + cell_margin
+                    c.drawCentredString(x_center, y_center, str(col_name))  # Apply y_offset to text
+                    c.rect(x_start, y_position - row_height, column_widths[col_idx], row_height, fill=0, stroke=1)
+                    x_start += column_widths[col_idx]
+
+                y_position -= row_height
+                x_start = 30  # Reset to start of the table
+
+                # Draw Table Rows
+                c.setFont("Helvetica", 10)
+                for _, row in df.iterrows():
+                    for col_idx, col_name in enumerate(df.columns):
+                        text = str(row[col_name])
+                        x_center = x_start + (column_widths[col_idx] / 2)
+                        y_center = y_position - row_height / 2 + 5 + cell_margin
+                        c.drawCentredString(x_center, y_center, text)  # Apply margin top to cell text
+                        c.rect(x_start, y_position - row_height, column_widths[col_idx], row_height, fill=0, stroke=1)
+                        x_start += column_widths[col_idx]
+
+                    y_position -= row_height
+                    x_start = 30  # Reset to start of the row
+
+                    # Check for page overflow
+                    if y_position < 50:  # Bottom margin
+                        c.showPage()
+                        c.setFont("Helvetica", 10)
+                        y_position = page_height - 50  # Reset position
+                        x_start = 30  # Reset start position
+
+                        # Redraw Headers on New Page
+                        for col_idx, col_name in enumerate(df.columns):
+                            x_center = x_start + (column_widths[col_idx] / 2)
+                            y_center = y_position - row_height / 2 + 5
+                            c.drawCentredString(x_center, y_center, str(col_name))  # Apply y_offset to text
+                            c.rect(x_start, y_position - row_height, column_widths[col_idx], row_height, fill=0, stroke=1)
+                            x_start += column_widths[col_idx]
+
+                        y_position -= row_height
+                        x_start = 30  # Reset to start of the row
+
+                # Save and send the PDF
+                c.save()
+                buffer.seek(0)
+                return send_file(buffer, mimetype='application/pdf', as_attachment=True, download_name='report.pdf')
+
+            elif report_format == 'xlsx':
+                # Generate Excel file from the DataFrame
+                buffer = BytesIO()
+                df.to_excel(buffer, index=False, engine='openpyxl')
+                buffer.seek(0)
+                return send_file(buffer, mimetype='application/vnd.ms-excel', as_attachment=True, download_name='report.xlsx')
+
+            else:
+                return {'message': 'Invalid format specified'}, 400
+
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            return {'message': f'Internal server error: {str(e)}'}, 500

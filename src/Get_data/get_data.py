@@ -11,12 +11,14 @@ from datetime import datetime, timedelta
 
 class GetData:
     @staticmethod
-    def getData_common(srn, Table_name):
+    def getData_common(id, srn, Table_name):
         try:
             # import pdb
             # pdb.set_trace()
             if srn:
                 sql_query = f"""SELECT * FROM {Table_name} WHERE srn = '{srn}'"""
+            elif id:
+                sql_query = f"""SELECT * FROM {Table_name} WHERE id = '{id}'"""
             else:
                 sql_query = f"""SELECT * FROM {Table_name}"""
 

@@ -7,7 +7,7 @@ from src.dataframe_df.dataframe_operations import Dataframe_pandas
 
 class SubmitBook:
     @staticmethod
-    def submit_book(srn,book_id,isbn, status=None):
+    def submit_book(srn,book_id,isbn,isDamage,isLost):
         try:
             query= f""" SELECT * FROM borrower_book_detail WHERE book_id = {book_id} AND isbn = {isbn} AND srn = {srn}"""
             df = Dataframe_pandas.read_sql_as_df(query)
@@ -16,16 +16,15 @@ class SubmitBook:
                 for row in book_json:
                     id = row['id']
                     book_id= row['book_id']
-                    update_user_details= f"""UPDATE borrower_book_detail SET isSubmit = 1
+                    update_user_details= f"""UPDATE borrower_book_detail SET isSubmit = 1, isDamage = {isDamage}, isLost = {isLost}
             WHERE id = {id}"""
                     book_id = int(book_id)
-                    update_book = f"""UPDATE book SET isCheckedOut = 0
+                    if isDamage == 1 or isLost == 1:
+                        isActive = 0
+                    else:
+                        isActive = 1
+                    update_book = f"""UPDATE book SET isCheckedOut = 0, isActive = {isActive}
             WHERE book_id = {book_id}"""
-
-                    if status == 'damaged':
-                        update_book += f""", isDamage = 1"""
-                    elif status == 'lost':
-                        update_book += f""", isLost = 1"""
                     connection = Dbconnect.dbconnects()
                     cursor = connection.cursor()
                     try:
