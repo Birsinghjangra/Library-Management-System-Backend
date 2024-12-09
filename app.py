@@ -1,5 +1,6 @@
 import requests
-from flask import Flask, request,send_file, jsonify  # Import request object
+from flask import (Flask, redirect, render_template, request,
+                   send_from_directory, url_for)
 from flask_cors import CORS
 import os
 # from src.routes.routes import Routes
@@ -29,6 +30,12 @@ app.config['SECRET_KEY'] = SECRET_KEY['secret_key']
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
+@app.route('/')
+def index():
+   print('Request for index page received')
+   return render_template('index.html')
+
 @app.route('/mysql', methods=METHODS)
 def connectionss():
     connection = Dbconnect.dbconnects()
@@ -49,7 +56,6 @@ def login_api():
     return Routes.login_api(request)
 
 @app.route('/csv_import',methods=METHODS)
-# @app.route('/csvimport',methods=METHODS)
 # @app_decorator
 def csv_import():
     return Routes.csv_import(request)
