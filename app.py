@@ -3,6 +3,9 @@ from flask import (Flask, redirect, render_template, request,
                    send_from_directory, url_for)
 from flask_cors import CORS
 import os
+import sys
+sys.path.append('D:\Project\Library-Management-System-Backend')
+
 # from src.routes.routes import Routes
 from src.DB_connect.dbconnection import Dbconnect
 from src.config import SECRET_KEY
@@ -30,11 +33,9 @@ app.config['SECRET_KEY'] = SECRET_KEY['secret_key']
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
 @app.route('/')
 def index():
-   print('Request for index page received')
-   return render_template('index.html')
+    return render_template('abc.html')
 
 @app.route('/mysql', methods=METHODS)
 def connectionss():
